@@ -18,6 +18,7 @@ await mongoClient.connect()
 const db = mongoClient.db('MyWallet')
 const userCollection = db.collection('Users')
 const tokenCollection = db.collection('Tokens')
+const movementsCollection = db.collection('Movements')
 
 
 server.post('/register', async (req, res) => {
@@ -68,6 +69,36 @@ server.post('/login', async (req, res) => {
         await tokenCollection.insertOne({token, userId: user._id})
         
         res.status(202).send(token)
+
+    } catch (error) {
+        res.sendStatus(500)
+        console.log(error)
+    }
+})
+
+server.post('/movements', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '')
+    const schema = joi.object({
+        description: joi.string().required(),
+        value: joi.number().precision(2).required()
+    })
+    const validation = schema.validate(req.body, { abortEarly: false })
+    try {
+        if (validation.error) {
+            return res.status(422).send(validation.error.details.map(v => v.message))
+        }
+        if (!token){
+            return res.status(406).send('Missing token')
+        }
+    
+        const tokenId = await tokenCollection.findOne({ token })
+        if (!tokenId) {
+            return res.status(401).send('Invalid token')
+        }
+
+        await userCollection.updateOne({_id: tokenId.userId}, {$push: {movements: req.body}})
+
+        res.sendStatus(201)
 
     } catch (error) {
         res.sendStatus(500)
