@@ -88,7 +88,7 @@ server.post('/movements', async (req, res) => {
             return res.status(422).send(validation.error.details.map(v => v.message))
         }
         if (!token){
-            return res.status(406).send('Missing token')
+            return res.status(401).send('Missing token')
         }
     
         const tokenId = await tokenCollection.findOne({ token })
@@ -105,5 +105,30 @@ server.post('/movements', async (req, res) => {
         console.log(error)
     }
 })
+
+server.get('/account', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '')
+
+    try {
+        if (!token) {
+            return res.status(401).send('Missing token')
+        }
+
+        const tokenId = await tokenCollection.findOne({ token })
+        if (!tokenId) {
+            return res.status(401).send('Invalid token')
+        }
+
+        const user = await userCollection.findOne({ _id: tokenId.userId })
+        delete user._id
+        delete user.email
+        delete user.password
+
+        res.status(200).send(user)
+
+    } catch (error) {
+        res.sendStatus(500)
+        console.log(error)
+    }})
 
 server.listen(5000,() => console.log('ready'))
