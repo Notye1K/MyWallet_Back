@@ -6,6 +6,7 @@ import dotenv from "dotenv"
 import { stripHtml } from "string-strip-html"
 import bcrypt from "bcrypt"
 import { v4 } from "uuid"
+import dayjs from 'dayjs'
 
 
 dotenv.config()
@@ -18,7 +19,6 @@ await mongoClient.connect()
 const db = mongoClient.db('MyWallet')
 const userCollection = db.collection('Users')
 const tokenCollection = db.collection('Tokens')
-const movementsCollection = db.collection('Movements')
 
 
 server.post('/register', async (req, res) => {
@@ -96,7 +96,9 @@ server.post('/movements', async (req, res) => {
             return res.status(401).send('Invalid token')
         }
 
-        await userCollection.updateOne({_id: tokenId.userId}, {$push: {movements: req.body}})
+        const time = dayjs().format('MM/DD')
+        const id = v4()
+        await userCollection.updateOne({_id: tokenId.userId}, {$push: {movements: {...req.body, time, id }}})
 
         res.sendStatus(201)
 
@@ -129,6 +131,7 @@ server.get('/account', async (req, res) => {
     } catch (error) {
         res.sendStatus(500)
         console.log(error)
-    }})
+    }
+})
 
 server.listen(5000,() => console.log('ready'))
