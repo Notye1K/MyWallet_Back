@@ -34,3 +34,23 @@ export async function account (req, res) {
         console.log(error)
     }
 }
+
+export async function deleteTransaction (req, res) {
+    try {
+        const tokenId = res.locals.tokenId
+        const transactionId = req.query.transactionId
+        const ids = await userCollection.findOne({ _id: tokenId.userId }, { movements: { id: 1 } })
+
+        if (!transactionId || !ids.movements.find(v => v.id === transactionId)){
+            return res.sendStatus(404)
+        }
+
+        await userCollection.updateOne({ _id: tokenId.userId}, {$pull: {movements: {id: transactionId}}})
+
+        res.sendStatus(200)
+
+    } catch (error) {
+        res.sendStatus(500)
+        console.log(error)
+    }
+}
