@@ -1,4 +1,4 @@
-import express, {json}  from "express"
+import express, { json } from "express"
 import cors from "cors"
 import authRouter from './routers/authRouter.js'
 import accountRouter from './routers/accountRouter.js'
@@ -10,4 +10,4 @@ server.use(cors())
 server.use(authRouter)
 server.use(accountRouter)
 
-server.listen(5000,() => console.log('ready'))
+server.listen(5000, () => console.log('ready'))

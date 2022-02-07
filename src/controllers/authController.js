@@ -1,17 +1,19 @@
 import { stripHtml } from "string-strip-html"
 import { v4 } from "uuid"
 import bcrypt from "bcrypt"
-import {userCollection, tokenCollection} from '../db.js'
+import { userCollection, tokenCollection } from '../db.js'
 
-export async function register (req, res) {
+export async function register(req, res) {
     try {
-        const user = await userCollection.findOne({ email: req.body.email })
+        const email = stripHtml(req.body.email).result.trim()
+        const user = await userCollection.findOne({ email })
         if (user) {
             return res.status(409).send('Email already registered')
         }
 
         const password = bcrypt.hashSync(req.body.password, 10)
-        await userCollection.insertOne({ ...req.body, password })
+        const name = stripHtml(req.body.name).result.trim()
+        await userCollection.insertOne({ email, name, password })
         res.sendStatus(201)
 
     } catch (error) {
@@ -20,9 +22,10 @@ export async function register (req, res) {
     }
 }
 
-export async function login (req, res) {
+export async function login(req, res) {
     try {
-        const user = await userCollection.findOne({ email: req.body.email })
+        const email = stripHtml(req.body.email).result.trim()
+        const user = await userCollection.findOne({ email })
         if (!user) {
             return res.status(404).send('Email not found')
         }

@@ -9,4 +9,4 @@ const db = mongoClient.db('MyWallet')
 const userCollection = db.collection('Users')
 const tokenCollection = db.collection('Tokens')
 
-export {userCollection, tokenCollection}
+export { userCollection, tokenCollection }
