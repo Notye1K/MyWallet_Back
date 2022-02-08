@@ -10,4 +10,4 @@ server.use(cors())
 server.use(authRouter)
 server.use(accountRouter)
 
-server.listen(5000, () => console.log('ready'))
+server.listen(process.env.PORT, () => console.log('ready'))
